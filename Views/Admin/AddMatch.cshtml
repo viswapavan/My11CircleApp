@@ -1,0 +1,88 @@
+﻿@{
+    var leagues = ViewBag.Leagues;
+    var users = ViewBag.Users;
+}
+
+<h2 class="mb-4">➕ Create Match</h2>
+
+<div class="card p-4">
+
+    <form method="post">
+
+        <!-- League -->
+        <div class="mb-3">
+            <label>League</label>
+            <select name="leagueId" class="form-control" required>
+                @foreach (var l in leagues)
+                {
+                    <option value="@l.Id">@l.Name</option>
+                }
+            </select>
+        </div>
+
+        <!-- Date -->
+        <div class="mb-3">
+            <label>Match Date</label>
+            <input type="date" name="matchDate" class="form-control" required />
+        </div>
+
+        <!-- Entry Fee -->
+        <div class="mb-3">
+            <label>Entry Fee (₹)</label>
+            <input type="number" id="entryFee" name="entryFee" class="form-control" required />
+        </div>
+
+        <!-- Participants -->
+        <div class="mb-3">
+            <label>👥 Select Players</label>
+
+            <div style="max-height:200px; overflow-y:auto; border:1px solid #ddd; padding:10px; border-radius:8px;">
+                @foreach (var u in users)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input player-checkbox"
+                               type="checkbox"
+                               name="selectedUsers"
+                               value="@u.Id"
+                               data-wallet="@u.Wallet"
+                               checked />
+
+                        <label class="form-check-label">
+                            @u.Name (₹@u.Wallet)
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Warning -->
+        <p id="warning" style="color:red;"></p>
+
+        <button class="btn btn-success w-100">Create Match</button>
+
+    </form>
+
+</div>
+
+<script>
+    document.getElementById("entryFee").addEventListener("input", function () {
+
+        let fee = parseFloat(this.value) || 0;
+        let warning = "";
+
+        document.querySelectorAll(".player-checkbox").forEach(cb => {
+
+            let wallet = parseFloat(cb.getAttribute("data-wallet"));
+
+            if (wallet < fee) {
+                cb.checked = false;
+                cb.disabled = true;
+                warning = "⚠ Some users removed due to insufficient balance";
+            } else {
+                cb.disabled = false;
+            }
+        });
+
+        document.getElementById("warning").innerText = warning;
+    });
+</script>

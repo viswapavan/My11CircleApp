@@ -1,0 +1,29 @@
+﻿<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card p-4">
+            <h3 class="text-center mb-3">Login</h3>
+
+            <!-- ✅ ADD THIS HERE -->
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form method="post">
+                <div class="mb-3">
+                    <label>Email</label>
+                    <input name="email" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label>Password</label>
+                    <input type="password" name="password" class="form-control" required />
+                </div>
+
+                <button class="btn btn-success w-100">Login</button>
+            </form>
+        </div>
+    </div>
+</div>

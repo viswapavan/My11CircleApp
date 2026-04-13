@@ -1,0 +1,28 @@
+﻿@model IEnumerable<dynamic>
+
+<h2 class="mb-4">📊 Player Dashboard</h2>
+<h4>💰 Your Wallet: ₹@Context.Session.GetString("Wallet")</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Player</th>
+            <th>Played</th>
+            <th>Missed</th>
+            <th>Profit (₹)</th>
+            <th>Loss (₹)</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Played</td>
+                <td>@item.Missed</td>
+                <td>@item.Profit</td>
+                <td>@item.Loss</td>
+            </tr>
+        }
+    </tbody>
+</table>

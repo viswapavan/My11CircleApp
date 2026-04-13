@@ -1,0 +1,26 @@
+﻿@model IEnumerable<My11CircleApp.Models.WalletTransaction>
+
+<h2>💰 Wallet History</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.CreatedAt</td>
+                <td>@t.Type</td>
+                <td>₹@t.Amount</td>
+                <td>@t.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>

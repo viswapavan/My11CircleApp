@@ -1,0 +1,193 @@
+﻿@{
+    ViewData["Title"] = "Admin Panel";
+
+    var users = ViewBag.Users as List<My11CircleApp.Models.User>;
+    var leagues = ViewBag.Leagues as List<My11CircleApp.Models.League>;
+    var matches = ViewBag.Matches as List<My11CircleApp.Models.Match>;
+
+    var leaderboard = users != null
+        ? users.OrderByDescending(u => u.Wallet).ToList()
+        : new List<My11CircleApp.Models.User>();
+}
+
+<style>
+    .row {
+        display: flex;
+        gap: 20px;
+    }
+
+    .card {
+        flex: 1;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .top-actions {
+        margin-bottom: 20px;
+    }
+
+        .top-actions a {
+            padding: 10px 15px;
+            margin-right: 10px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+            .top-actions a:hover {
+                background: #0056b3;
+            }
+
+    table {
+        width: 100%;
+        margin-top: 10px;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background: #333;
+        color: white;
+    }
+</style>
+
+<h2>Admin Panel</h2>
+
+<!-- 🔹 TOP BUTTONS -->
+<div class="top-actions">
+    <a href="/Admin/AddMatch">➕ Add Match</a>
+    <a href="/Admin/AddResult">🏆 Add Result</a>
+</div>
+
+<!-- 🔹 ROW: 3 COLUMNS -->
+<div class="row">
+
+    <!-- CREATE PLAYER -->
+    <div class="card">
+        <h4>Create Player</h4>
+        <form method="post" action="/Admin/CreateUser">
+            <input type="text" name="name" placeholder="Name" required /><br />
+            <input type="email" name="email" placeholder="Email" required /><br />
+            <input type="password" name="password" placeholder="Password" required /><br />
+            <select name="role">
+                <option value="user">Player</option>
+                <option value="admin">Admin</option>
+            </select><br /><br />
+            <button type="submit">Add</button>
+        </form>
+    </div>
+
+    <!-- ADD MONEY -->
+    <div class="card">
+        <h4>Add Money</h4>
+        <form method="post" action="/Admin/AddMoney">
+            <select name="userId">
+                @if (users != null)
+                {
+                    foreach (var u in users)
+                    {
+                        <option value="@u.Id">@u.Name (₹@u.Wallet)</option>
+                    }
+                }
+            </select><br />
+            <input type="number" name="amount" placeholder="Amount" required /><br /><br />
+            <button type="submit">Add</button>
+        </form>
+    </div>
+
+    <!-- ADD LEAGUE -->
+    <div class="card">
+        <h4>Add League</h4>
+        <form method="post" action="/Admin/AddLeague">
+            <input type="text" name="name" placeholder="League Name" required /><br />
+            <input type="text" name="description" placeholder="Description" required /><br /><br />
+            <button type="submit">Add</button>
+        </form>
+    </div>
+
+</div>
+
+<hr />
+
+<!-- 🔹 PLAYERS TABLE -->
+<h3>Players</h3>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Wallet</th>
+    </tr>
+
+    @if (users != null)
+    {
+        foreach (var u in users)
+        {
+            <tr>
+                <td>@u.Name</td>
+                <td>@u.Email</td>
+                <td>₹@u.Wallet</td>
+            </tr>
+        }
+    }
+</table>
+
+<hr />
+
+<!-- 🔹 LEADERBOARD -->
+<h3>Leaderboard</h3>
+<table>
+    <tr>
+        <th>Rank</th>
+        <th>Player</th>
+        <th>Wallet</th>
+    </tr>
+
+    @{
+        int rank = 1;
+    }
+
+    @foreach (var u in leaderboard)
+    {
+        <tr>
+            <td>@rank</td>
+            <td>@u.Name</td>
+            <td>₹@u.Wallet</td>
+        </tr>
+        rank++;
+    }
+</table>
+
+<hr />
+
+<!-- 🔹 MATCHES -->
+<h3>Matches</h3>
+<table>
+    <tr>
+        <th>Id</th>
+        <th>League</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Fee</th>
+    </tr>
+
+    @if (matches != null)
+    {
+        foreach (var m in matches)
+        {
+            <tr>
+                <td>@m.Id</td>
+                <td>@m.LeagueId</td>
+                <td>@m.MatchDate</td>
+                <td>@m.Status</td>
+                <td>₹@m.EntryFee</td>
+            </tr>
+        }
+    }
+</table>

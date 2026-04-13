@@ -1,0 +1,73 @@
+﻿@{
+    var matches = ViewBag.Matches;
+    var users = ViewBag.Users;
+}
+
+<h2 class="mb-4">🏆 Add Match Result</h2>
+
+<div class="card p-4">
+
+    <form method="post" action="/Admin/AddResult">
+
+        <!-- Select Match -->
+        <div class="mb-3">
+            <label>Select Match</label>
+            <select name="matchId" class="form-control" required>
+                @foreach (var m in matches)
+                {
+                    <option value="@m.Id">
+                        Match @m.Id - @m.MatchDate
+                    </option>
+                }
+            </select>
+        </div>
+
+        <hr />
+
+        <!-- 1st Place -->
+        <div class="mb-3">
+            <label>🥇 First Place</label>
+            <div class="border p-2" style="max-height:150px; overflow-y:auto;">
+                @foreach (var u in users)
+                {
+                    <div class="form-check">
+                        <input type="checkbox" name="firstPlace" value="@u.Id" class="form-check-input" />
+                        <label class="form-check-label">@u.Name</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- 2nd Place -->
+        <div class="mb-3">
+            <label>🥈 Second Place</label>
+            <div class="border p-2" style="max-height:150px; overflow-y:auto;">
+                @foreach (var u in users)
+                {
+                    <div class="form-check">
+                        <input type="checkbox" name="secondPlace" value="@u.Id" class="form-check-input" />
+                        <label class="form-check-label">@u.Name</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- 3rd Place -->
+        <div class="mb-3">
+            <label>🥉 Third Place</label>
+            <div class="border p-2" style="max-height:150px; overflow-y:auto;">
+                @foreach (var u in users)
+                {
+                    <div class="form-check">
+                        <input type="checkbox" name="thirdPlace" value="@u.Id" class="form-check-input" />
+                        <label class="form-check-label">@u.Name</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button class="btn btn-success w-100">Submit Result</button>
+
+    </form>
+
+</div>
