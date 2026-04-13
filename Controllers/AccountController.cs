@@ -63,5 +63,22 @@ namespace My11CircleApp.Controllers
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
             return Convert.ToBase64String(bytes);
         }
+        // TEMP API
+public IActionResult CreateAdmin()
+{
+    var user = new User
+    {
+        Name = "Admin",
+        Email = "admin@gmail.com",
+        PasswordHash = Hash("1234"),
+        Role = "admin",
+        Wallet = 1000
+    };
+
+    _context.Users.Add(user);
+    _context.SaveChanges();
+
+    return Content("Admin created");
+}
     }
 }
