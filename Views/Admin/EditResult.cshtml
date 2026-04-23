@@ -1,0 +1,70 @@
+﻿@{
+    var users = ViewBag.Users;
+    var match = ViewBag.Match;
+
+    var first = ViewBag.First as List<int>;
+    var second = ViewBag.Second as List<int>;
+    var third = ViewBag.Third as List<int>;
+}
+
+<h2>Edit Result</h2>
+<style>
+    .player-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 5px;
+    }
+
+        .player-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .player-item label {
+            margin: 0;
+            font-size: 14px;
+            cursor: pointer;
+        }
+</style>
+
+<form method="post">
+    <input type="hidden" name="matchId" value="@match.Id" />
+
+    <h3>🥇 First Place</h3>
+    @foreach (var u in users)
+    {
+        <label class="player-item">
+            <input type="checkbox" name="firstPlace" value="@u.Id" />
+            @u.Name
+        </label>
+
+        <br />
+    }
+
+    <h3>🥈 Second Place</h3>
+    @foreach (var u in users)
+    {
+        <label class="player-item">
+            <input type="checkbox" name="firstPlace" value="@u.Id" />
+            @u.Name
+        </label>
+
+        <br />
+    }
+
+    <h3>🥉 Third Place</h3>
+    @foreach (var u in users)
+    {
+        <label class="player-item">
+            <input type="checkbox" name="firstPlace" value="@u.Id" />
+            @u.Name
+        </label>
+
+        <br />
+    }
+
+    <br />
+    <button type="submit">Update Result</button>
+</form>

@@ -56,6 +56,54 @@
         background: #333;
         color: white;
     }
+
+    .action-container {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .inline-form {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        margin: 0;
+    }
+
+    .amount-box {
+        width: 70px;
+        padding: 5px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    /* buttons */
+    .btn {
+        padding: 6px 10px;
+        font-size: 13px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    /* Add money */
+    .btn-add {
+        background-color: #28a745;
+        color: white;
+    }
+
+    /* Reset */
+    .btn-reset {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    /* hover */
+    .btn:hover {
+        opacity: 0.9;
+    }
 </style>
 
 <h2>Admin Panel</h2>
@@ -64,6 +112,7 @@
 <div class="top-actions">
     <a href="/Admin/AddMatch">➕ Add Match</a>
     <a href="/Admin/AddResult">🏆 Add Result</a>
+   
 </div>
 
 <!-- 🔹 ROW: 3 COLUMNS -->
@@ -116,29 +165,55 @@
 
 <hr />
 
-<!-- 🔹 PLAYERS TABLE -->
-<h3>Players</h3>
-<table>
+<h3>Users</h3>
+
+<table class="table">
     <tr>
+        <th>Id</th>
         <th>Name</th>
         <th>Email</th>
         <th>Wallet</th>
+        <th>Action</th>
     </tr>
 
-    @if (users != null)
+    @if (ViewBag.Users != null)
     {
-        foreach (var u in users)
+        foreach (var u in ViewBag.Users)
         {
             <tr>
+                <td>@u.Id</td>
                 <td>@u.Name</td>
                 <td>@u.Email</td>
                 <td>₹@u.Wallet</td>
+
+                <td>
+                    <div class="action-container">
+
+                        <!-- 💰 Add Money -->
+                        <form method="post" action="/Admin/AddMoney" class="inline-form">
+                            <input type="hidden" name="userId" value="@u.Id" />
+                            <input type="number" name="amount" placeholder="₹" class="amount-box" required />
+                            <button type="submit" class="btn btn-add">
+                                Add Money
+                            </button>
+                        </form>
+
+                        <!-- 🔐 Reset Password -->
+                        <form method="post" action="/Admin/ResetPassword" class="inline-form">
+                            <input type="hidden" name="userId" value="@u.Id" />
+                            <button type="submit"
+                                    onclick="return confirm('Reset password to 1234?')"
+                                    class="btn btn-reset">
+                                Reset Password
+                            </button>
+                        </form>
+
+                    </div>
+                </td>
             </tr>
         }
     }
 </table>
-
-<hr />
 
 <!-- 🔹 LEADERBOARD -->
 <h3>Leaderboard</h3>
@@ -168,25 +243,41 @@
 
 <!-- 🔹 MATCHES -->
 <h3>Matches</h3>
-<table>
+
+<table class="table">
     <tr>
         <th>Id</th>
         <th>League</th>
+        <th>Description</th>
         <th>Date</th>
         <th>Status</th>
         <th>Fee</th>
+        <th>Action</th>
     </tr>
 
-    @if (matches != null)
+    @if (ViewBag.Matches != null)
     {
-        foreach (var m in matches)
+        foreach (var m in ViewBag.Matches)
         {
             <tr>
                 <td>@m.Id</td>
                 <td>@m.LeagueId</td>
-                <td>@m.MatchDate</td>
+                <td>@(m.Description ?? "N/A")</td>
+
+                <!-- ✅ Then Date -->
+                <td>@m.MatchDate.ToString("dd-MM-yyyy")</td>
                 <td>@m.Status</td>
                 <td>₹@m.EntryFee</td>
+
+                <td>
+                    <a href="/Admin/EditMatch?matchId=@m.Id" class="btn btn-primary">
+                        Edit Match
+                    </a>
+
+                    <a href="/Admin/EditResult?matchId=@m.Id" class="btn btn-warning">
+                        Edit Result
+                    </a>
+                </td>
             </tr>
         }
     }

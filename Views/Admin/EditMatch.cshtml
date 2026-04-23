@@ -1,0 +1,24 @@
+﻿<h3>Edit Match</h3>
+
+<form method="post" action="/Admin/EditMatch">
+
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <label>Description</label>
+    <input type="text" name="description" value="@Model.Description" />
+
+    <label>Match Date</label>
+    <input type="datetime-local"
+           name="matchDate"
+           value="@Model.MatchDate.ToString("yyyy-MM-ddTHH:mm")" />
+
+    <label>Entry Fee</label>
+    <input type="number" name="entryFee" value="@Model.EntryFee" />
+
+    <br />
+
+    <button type="submit" class="btn btn-success">
+        Save Changes
+    </button>
+
+</form>

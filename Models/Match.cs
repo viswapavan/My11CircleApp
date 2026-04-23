@@ -9,5 +9,6 @@ namespace My11CircleApp.Models
         public DateTime MatchDate { get; set; }
         public string Status { get; set; } = "pending";
         public decimal EntryFee { get; set; }
+        public string Description { get; set; } = "";
     }
 }

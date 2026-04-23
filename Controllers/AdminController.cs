@@ -82,14 +82,15 @@ namespace My11CircleApp.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult AddMatch(int leagueId, DateTime matchDate, decimal entryFee, List<int> selectedUsers)
+        public IActionResult AddMatch(int leagueId, DateTime matchDate, decimal entryFee, string description, List<int> selectedUsers)
         {
             var match = new Match
             {
                 LeagueId = leagueId,
                 MatchDate = matchDate,
                 Status = "pending",
-                EntryFee = entryFee
+                EntryFee = entryFee,
+                Description = description
             };
 
             _context.Matches.Add(match);
@@ -116,7 +117,7 @@ namespace My11CircleApp.Controllers
                             UserId = user.Id,
                             Amount = entryFee,
                             Type = "Debit",
-                            Description = "Match entry fee"
+                            Description = $"{match.Description} - Entry Fee"
                         });
                     }
                 }
@@ -233,7 +234,7 @@ namespace My11CircleApp.Controllers
 
                 foreach (var userId in firstPlace)
                 {
-                    AddResultEntry(matchId, userId, "1", split, "1st Prize");
+                    AddResultEntry(matchId, userId, "1", split, $"{match.Description} - 1st Prize");
                 }
             }
 
@@ -244,7 +245,7 @@ namespace My11CircleApp.Controllers
 
                 foreach (var userId in secondPlace)
                 {
-                    AddResultEntry(matchId, userId, "2", split, "2nd Prize");
+                    AddResultEntry(matchId, userId, "2", split, $"{match.Description} - 2nd Prize");
                 }
             }
 
@@ -255,7 +256,7 @@ namespace My11CircleApp.Controllers
 
                 foreach (var userId in thirdPlace)
                 {
-                    AddResultEntry(matchId, userId, "3", split, "3rd Prize");
+                    AddResultEntry(matchId, userId, "3", split, $"{match.Description} - 3rd Prize");
                 }
             }
 
@@ -288,5 +289,239 @@ namespace My11CircleApp.Controllers
                 });
             }
         }
+        public IActionResult EditResult(int matchId)
+        {
+            var match = _context.Matches.Find(matchId);
+
+            var results = _context.ContestResults
+                .Where(r => r.MatchId == matchId)
+                .ToList();
+
+            ViewBag.Match = match;
+            ViewBag.Users = _context.Users.ToList();
+
+            // 👇 group existing winners
+            ViewBag.First = results.Where(r => r.Position == "1").Select(r => r.UserId).ToList();
+            ViewBag.Second = results.Where(r => r.Position == "2").Select(r => r.UserId).ToList();
+            ViewBag.Third = results.Where(r => r.Position == "3").Select(r => r.UserId).ToList();
+
+            return View();
+        }
+        [HttpPost]
+        public IActionResult EditResult(int matchId, List<int> firstPlace, List<int> secondPlace, List<int> thirdPlace)
+        {
+            // ✅ Step 1: Get old results
+            var oldResults = _context.ContestResults
+                .Where(r => r.MatchId == matchId)
+                .ToList();
+
+            // ✅ Step 2: REVERSE old wallet impact
+            foreach (var r in oldResults)
+            {
+                var user = _context.Users.Find(r.UserId);
+                if (user != null)
+                {
+                    user.Wallet -= r.Prize; // 🔥 remove old winnings
+                }
+            }
+
+            // ✅ Remove old results
+            _context.ContestResults.RemoveRange(oldResults);
+            _context.SaveChanges();
+
+            // ✅ Step 3: Calculate pool
+            var participants = _context.MatchParticipants.Where(p => p.MatchId == matchId).ToList();
+            var match = _context.Matches.Find(matchId);
+
+            decimal totalPool = participants.Count * match.EntryFee;
+
+            decimal firstPrize = totalPool * 0.5m;
+            decimal secondPrize = totalPool * 0.3m;
+            decimal thirdPrize = totalPool * 0.2m;
+
+            // 🥇 First
+            if (firstPlace != null && firstPlace.Count > 0)
+            {
+                decimal split = firstPrize / firstPlace.Count;
+
+                foreach (var uid in firstPlace)
+                {
+                    _context.ContestResults.Add(new ContestResult
+                    {
+                        MatchId = matchId,
+                        UserId = uid,
+                        Position = "1",
+                        Prize = split
+                    });
+
+                    var user = _context.Users.Find(uid);
+                    user.Wallet += split;
+
+                    _context.WalletTransactions.Add(new WalletTransaction
+                    {
+                        UserId = uid,
+                        Amount = split,
+                        Type = "Credit",
+                        Description = "Updated 1st Prize"
+                    });
+                }
+            }
+
+            // 🥈 Second
+            if (secondPlace != null && secondPlace.Count > 0)
+            {
+                decimal split = secondPrize / secondPlace.Count;
+
+                foreach (var uid in secondPlace)
+                {
+                    _context.ContestResults.Add(new ContestResult
+                    {
+                        MatchId = matchId,
+                        UserId = uid,
+                        Position = "2",
+                        Prize = split
+                    });
+
+                    var user = _context.Users.Find(uid);
+                    user.Wallet += split;
+
+                    _context.WalletTransactions.Add(new WalletTransaction
+                    {
+                        UserId = uid,
+                        Amount = split,
+                        Type = "Credit",
+                        Description = "Updated 2nd Prize"
+                    });
+                }
+            }
+
+            // 🥉 Third
+            if (thirdPlace != null && thirdPlace.Count > 0)
+            {
+                decimal split = thirdPrize / thirdPlace.Count;
+
+                foreach (var uid in thirdPlace)
+                {
+                    _context.ContestResults.Add(new ContestResult
+                    {
+                        MatchId = matchId,
+                        UserId = uid,
+                        Position = "3",
+                        Prize = split
+                    });
+
+                    var user = _context.Users.Find(uid);
+                    user.Wallet += split;
+
+                    _context.WalletTransactions.Add(new WalletTransaction
+                    {
+                        UserId = uid,
+                        Amount = split,
+                        Type = "Credit",
+                        Description = "Updated 3rd Prize"
+                    });
+                }
+            }
+
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+        public IActionResult EditMatch(int matchId)
+        {
+            var match = _context.Matches.Find(matchId);
+            if (match == null) return NotFound();
+
+            return View(match);
+        }
+        [HttpPost]
+        [HttpPost]
+        public IActionResult EditMatch(int id, decimal entryFee, string description, DateTime matchDate)
+        {
+            var match = _context.Matches.Find(id);
+            if (match == null) return NotFound();
+            // 🔹 Update basic fields
+            match.Description = description;
+            match.MatchDate = matchDate;
+
+            decimal oldFee = match.EntryFee;
+            decimal diff = entryFee - oldFee;
+
+            if (diff == 0)
+            {
+                _context.SaveChanges();
+                return RedirectToAction("Index");
+            }
+
+            var participants = _context.MatchParticipants
+                .Where(p => p.MatchId == id)
+                .ToList();
+
+            // ✅ 1. Adjust wallet (only difference)
+            foreach (var p in participants)
+            {
+                var user = _context.Users.Find(p.UserId);
+                if (user == null) continue;
+
+                user.Wallet -= diff; // if diff = +1 → deduct extra ₹1
+
+                _context.WalletTransactions.Add(new WalletTransaction
+                {
+                    UserId = user.Id,
+                    Amount = Math.Abs(diff),
+                    Type = diff > 0 ? "Debit" : "Credit",
+                    Description = $"{match.Description} - Fee Correction"
+                });
+            }
+
+            // ✅ 2. If results exist → fix winnings
+            var oldResults = _context.ContestResults
+                .Where(r => r.MatchId == id)
+                .ToList();
+
+            if (oldResults.Any())
+            {
+                // 🔁 reverse old winnings
+                foreach (var r in oldResults)
+                {
+                    var user = _context.Users.Find(r.UserId);
+                    if (user != null)
+                        user.Wallet -= r.Prize;
+                }
+
+                _context.ContestResults.RemoveRange(oldResults);
+                _context.SaveChanges();
+
+                // 🔁 recalc with new entry fee
+                decimal totalPool = participants.Count * entryFee;
+
+                decimal firstPrize = totalPool * 0.5m;
+                decimal secondPrize = totalPool * 0.3m;
+                decimal thirdPrize = totalPool * 0.2m;
+
+                // NOTE: you may want to store winners before delete
+                // or force admin to re-enter via Edit Result UI
+            }
+
+            // ✅ 3. Update match fee
+            match.EntryFee = entryFee;
+
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public IActionResult ResetPassword(int userId)
+        {
+            var user = _context.Users.Find(userId);
+            if (user == null) return NotFound();
+
+            // 🔐 set default password = 1234
+            user.PasswordHash = Hash("1234");
+
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }   
     }
 }
